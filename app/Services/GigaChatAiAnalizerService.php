@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Exception;
 use Illuminate\Support\Facades\Http;
 
 class GigaChatAiAnalizerService implements AIAnalizerInterface { 
@@ -45,7 +46,7 @@ class GigaChatAiAnalizerService implements AIAnalizerInterface {
             'max_tokens' => 1000,
         ]);
 
-        return $response->json()['choices'][0]['message']['content'];
+        return self::getResponce($response);
     }
 
     protected static function authorize() {
@@ -66,7 +67,6 @@ class GigaChatAiAnalizerService implements AIAnalizerInterface {
             'scope' => 'GIGACHAT_API_PERS',
         ]);
 
-        // dd($response->json());
         return $response->json()['access_token'];
     }
 
@@ -93,63 +93,27 @@ class GigaChatAiAnalizerService implements AIAnalizerInterface {
             $end = <<<TEXT
             скидываю последний фрагмент кода всего смарт контракта:
             $endChunk
-            проанализируй его по тем требованиям, о которых я писал и выведи в формате "$[адресс_зависимости1, задресс_ависимости2...]$"
             TEXT;
-            // dd($start);
-            $text .= "\n" . self::getResponce(self::getTextAnalizeCode($start));
+            self::getTextAnalizeCode($start);
             for ($i = 1; $i <= count($code) - 2; $i++) {
-                $text .= "\n" . self::getResponce(self::getTextAnalizeCode($code[$i]));
+                self::getTextAnalizeCode($code[$i]);
             }
 
-            return $text . "\n" .  self::getResponce(self::getTextAnalizeCode($end));
-            
+            return self::getTextAnalizeCode($end);
         } 
 
         return self::getTextAnalizeCode($code[0]);
     }
 
     public static function getResponce($arrayResponce) {
-        dd($arrayResponce);
-        ld();
-        return $arrayResponce['choices'][0]['message']['content'];
+        if ($arrayResponce['message'] == 'Payment Required') {
+            return 'требуются токены для GigaChat';
+        }
+        try {
+            return $arrayResponce['choices'][0]['message']['content'];
+        } catch(Exception $e) {
+            return "error";
+        }
     }
 }
 
-
-// curl -k -L -X POST 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth' \
-// -H 'Content-Type: application/x-www-form-urlencoded' \
-// -H 'Accept: application/json' \
-// -H 'RqUID: 6cbefaa6-777b-479a-bbe2-2df1e74664c8' \
-// -H 'Authorization: Basic OTNmZDk4MmMtMTlmMC00ODI1LTg0YzAtOGI3ZTM4YjgxZWYxOmM0NjMzOGY4LTJhM2ItNDRhNi05ZjI4LWVhYTQyNzM1NjY5OA==' \
-// --data-urlencode 'scope=GIGACHAT_API_PERS'
-
-
-
-
-
-
-// eyJjdHkiOiJqd3QiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiYWxnIjoiUlNBLU9BRVAtMjU2In0.ahGyWwwUy04CqT86ILM3su-27CwjYC7MFHrM1DVZYrXBXoO_IELQ4fEJcCIYVIx3rtv_w0OPX0jy8japzZfqr-VLmq75x7t99k88j-CWmItK_tzUlUK_sQR9tJpN0QGYvuRkFFykxU2YutFxzMQUiogKKbZagRHQSDQYJn9TlVUJowGIcpmuNGRN0V0evIEscs1oeMwszajSsUMnKuz8EoTSon8nVVTcIl_Aej2LWZsqpy173GnLVpC6XYSNFjdXoiyog0kbH4f-DnnPxcRAla6uv3QBDhJSGup1FVCWP9bL6KE2mAtn6fMgFMkfoSUNyWx2O_x12l4Id3AF7RLAog.5SuGGCKDt81kQRuXPDEl6Q.8tfIWJqX3Z0d55ug8pCjj2YOOHBXcBGsSgtPXly_KVE4FQFgEH4x1ymYHSL7OE5zx5nhqN352Wu0YvcW-uMmvdFfFRHM7bOsT6GpmBUh-vRrkr39xcybPN7mfMb3XX3_ZD3oyIi1ZCD3oyChpeAlbitBIoYHTfjGmme3Ew6pQTYgBHZnt_rutKDHzlIhCaA0V6nJjVZXpepEmh8gEnYPAd3j5tSZnN9Pd5Wgz3QkY44ndvQmKQf1fp61oH-002VEtQDwddSX8k9-gHmIhUjLY672VniypHfDybRVn8evkSlNDodB6XDRllRnoOaM9SJ9Dhu8cMXx9poONVGmnQL1-RdXof8sLKU7xHbvS6LtOdv22KpLYURJA64n873wy7FiZzO0fPuXrRkG4av7TIMZP8qra076u3akVmzOn-NQViKvNIvRaxh3Xml_PYLnoQgZt5zXws7EnTHkXUN3L0xeMLt3r4dem7wwSSQrrvRi-R_dM9VDrMeIxoulS7lqRsJjhbcGDq3vgel0ulmrqQwLR21xvUqQZetlmbI1bNAKIb5T_e40_uH2i6OCReRT5EcVVQqhw7-yFslH9on9dIE6mQGvqYPBlSWNuUF5i3oHwZF59RGQ5K2E-KO2qy-ZeC335eoApDATDGSfWVe6gxybtY_EqBz3lquNGiXXFrtHmiKYaM_2nmN6E-zkd9Fo2NzJRghFqyurpyiAXaxDdJLDLspPifBTLSKBT5g5QIyps94.iwzWN6AM2RfYE7H-XbNAUCtOrsYAx8a1lPGOEaXRyKw
-
-
-
-// curl -k -L -X POST \
-//   'https://gigachat.devices.sberbank.ru/api/v1/chat/completions' \
-//   -H 'Content-Type: application/json' \
-//   -H 'Authorization: Bearer eyJjdHkiOiJqd3QiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiYWxnIjoiUlNBLU9BRVAtMjU2In0.Wn2jKrN0meIbj5kIxDs0Z8REO17bxbiPcR5-I84GxcSBa_LMnyPnmBSEwtezWjxUirlFTff4jSWzcwqvwbcIEFziuqrQhQOolxHKZx6ZzGQRcOgyrl4cUtQde8M83ybZnmvKmG2GMKOA-5cuGzZAW30d0snePm16790zPKQNJsZomJ8K5h61zqlHmFmNcqsMEu8rc8H1IlIRf7By5dGGzsj2tXNnFJLNTf7wzB91X7OHApvRkr34QVSSelQFXOcy6A2GlEkGUWIw8L3FwrwD7d2lo1znJx8fMpuYf1INOUtLLekAhjGeQyNdRGrr3pQiFbDPhAC-qEdKMb2gJVazyw.0UXZFo_qj_JitJtw8nxEWw.2QwV8uSMxapsnuWPoX_lYiXkdCBrMKQeyQVOWfulAD_kf0Y8i1D5DZjroDjoamxgzV2wnUcsaFIE-zwNfGdX5b5blhcA66j5ZAItqytz8QVZYuERoXYyz7Uki-bp7pf9iDWkI3V3quOII6IVzDe1aUIzZ1R34BVIeA388qmPkvEgk5Va-n6X0cghqwaJgSpqzzfHli1bNxd_iAcN494h7i89MmML9qScKRQ_Y0ygQr0CyzPMhYTWq6ggn6BXYFTyX7eqa_jGJwIIINWf7BsEVY14C1TmNe1TNSPV-0fVUKgNY70rnhyf0AV-Z352-efgRJPummUS5tQl3LLp-w3AZOF2WK7jPn2poY2YfmWEaYa0aYLz895PeQzi-puCllVEER0PWIiVyaKGiF21gmCvKiMm2gQcyMdXFTwcQUA1YE8wtJOwhlHbpizr8uJry5G49j2zh2aw7M8k6yKVYP5DsXn_SENQjNJXug8MOvY_DTy510jVB-rwrSs5FGmaiHdmMK0nmVtLMKvnAMgXWtq6oUxir7_Eqv1ruBGzk9Lvc_3d89Cjo6jLpp5CQDWx7X9CYdAXZ4L9RVvit0iAqqS-MsokS2bBGYdAWskmlhHKStUlNBmln8wipgvTtkSNTGqHFpbbaoyW96ZFvh8LPvuiMh_dFcwiJ896umLrg-eUCi-_lWrJsHH7tjMXWjWZ0XpkPEHLZvvMkNsdzXfGoHC6y016fmAJMZVs63oj2Ip1oLY.rlXrMXkxEoFO_8ovkfJb-ogsb91GUWhqM846bVnzobo' \
-//   -H 'X-Client-ID: 93fd982c-19f0-4825-84c0-8b7e38b81ef1' \
-//   -d '{
-//     "model": "GigaChat-Pro-preview",
-//     "messages": [
-//       {
-//         "role": "user",
-//         "content": "Привет! Расскажи, как работает API GigaChat?"
-//       }
-//     ],
-//     "temperature": 0.7,
-//     "max_tokens": 1000
-//   }'
-
-
-
-
-// curl -k -L https://gigachat.devices.sberbank.ru/api/v1/models -H 'Accept: application/json' -H 'Authorization: Bearer eyJjdHkiOiJqd3QiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiYWxnIjoiUlNBLU9BRVAtMjU2In0.ahGyWwwUy04CqT86ILM3su-27CwjYC7MFHrM1DVZYrXBXoO_IELQ4fEJcCIYVIx3rtv_w0OPX0jy8japzZfqr-VLmq75x7t99k88j-CWmItK_tzUlUK_sQR9tJpN0QGYvuRkFFykxU2YutFxzMQUiogKKbZagRHQSDQYJn9TlVUJowGIcpmuNGRN0V0evIEscs1oeMwszajSsUMnKuz8EoTSon8nVVTcIl_Aej2LWZsqpy173GnLVpC6XYSNFjdXoiyog0kbH4f-DnnPxcRAla6uv3QBDhJSGup1FVCWP9bL6KE2mAtn6fMgFMkfoSUNyWx2O_x12l4Id3AF7RLAog.5SuGGCKDt81kQRuXPDEl6Q.8tfIWJqX3Z0d55ug8pCjj2YOOHBXcBGsSgtPXly_KVE4FQFgEH4x1ymYHSL7OE5zx5nhqN352Wu0YvcW-uMmvdFfFRHM7bOsT6GpmBUh-vRrkr39xcybPN7mfMb3XX3_ZD3oyIi1ZCD3oyChpeAlbitBIoYHTfjGmme3Ew6pQTYgBHZnt_rutKDHzlIhCaA0V6nJjVZXpepEmh8gEnYPAd3j5tSZnN9Pd5Wgz3QkY44ndvQmKQf1fp61oH-002VEtQDwddSX8k9-gHmIhUjLY672VniypHfDybRVn8evkSlNDodB6XDRllRnoOaM9SJ9Dhu8cMXx9poONVGmnQL1-RdXof8sLKU7xHbvS6LtOdv22KpLYURJA64n873wy7FiZzO0fPuXrRkG4av7TIMZP8qra076u3akVmzOn-NQViKvNIvRaxh3Xml_PYLnoQgZt5zXws7EnTHkXUN3L0xeMLt3r4dem7wwSSQrrvRi-R_dM9VDrMeIxoulS7lqRsJjhbcGDq3vgel0ulmrqQwLR21xvUqQZetlmbI1bNAKIb5T_e40_uH2i6OCReRT5EcVVQqhw7-yFslH9on9dIE6mQGvqYPBlSWNuUF5i3oHwZF59RGQ5K2E-KO2qy-ZeC335eoApDATDGSfWVe6gxybtY_EqBz3lquNGiXXFrtHmiKYaM_2nmN6E-zkd9Fo2NzJRghFqyurpyiAXaxDdJLDLspPifBTLSKBT5g5QIyps94.iwzWN6AM2RfYE7H-XbNAUCtOrsYAx8a1lPGOEaXRyKw'

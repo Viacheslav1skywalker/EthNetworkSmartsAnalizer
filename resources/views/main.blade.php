@@ -274,7 +274,7 @@
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
-       
+        updateTrackedContractsList()
         mock_user_id = 1
         async function fetchGraphData() {
           try {
@@ -479,9 +479,8 @@
             //     throw new Error(`HTTP error! status: ${response.status}`);
             // }
             data = await response.json();
-            console.log('data response:');
-            console.log(response.json());
-
+            // console.log('data response:');
+            // console.log(response.json());
             if (trackedContracts.length === 0) {
                 container.innerHTML = '<p>No contracts being tracked yet.</p>';
                 return;
@@ -492,14 +491,13 @@
             // }
 
             container.innerHTML = '';
-            changesInfo = getText(data.change_data);
-            trackedContracts.forEach(contract => {
+            // changesInfo = getText(data.change_data);
+            data.forEach(contract => {
                 const div = document.createElement('div');
                 div.className = 'contract-item';
                 div.innerHTML = `
-                    <span class="contract-address">${data.address}</span>
-                    <span class="contract-address">${data.change_data}</span>
-                    // <button class="remove-btn" data-address="${contract}">Remove</button>
+                    <span class="contract-address">${contract.address}</span>
+                    <button class="remove-btn">Remove</button>
                 `;
                 container.appendChild(div);
             });

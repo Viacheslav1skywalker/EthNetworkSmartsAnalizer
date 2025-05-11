@@ -17,62 +17,41 @@ use App\Normalize\CodeNormalizer;
 class AnalizeContractsController
 {
     public function analizeContractCode($smartAddress) {
-      // валидация
       $response = SmartsAnalizerService::getCode($smartAddress);
-      // dd($response);
-      // ks();
       if ($response['message'] != 'OK') {
-        // dd($response->json());
         return response('контракт не существует или не верефицирован', 404);
       }
-
       $contractName = $response['result'][0]['ContractName'];
-
       $code = $response['result'][0]['SourceCode'];
-
       $matches = CodeNormalizer::getContractsOnly($code);
-      // dd($code);
-      // ks();
       $nameInfo = "Название: $contractName \n";
       if ($matches == []) {
         return response("$nameInfo Не удалось распознать код смарт контракта", 200);
       }
 
       $resData = [];
-      foreach ($matches as $match) {
-
+      foreach ($matches as $match) { 
         $mbLength = strlen($match); 
-        if ($mbLength > 50000) {
-          $code = str_split($match, 50000);
+        if ($mbLength > 7000) {
+          $code = str_split($match, 7000);
         } else {
           $code = [$match];
         }
-
         $resData += $code;
       }
 
       $textAnalize = GigaChatAiAnalizerService::getCicleAnalize($resData);
-      
-      $res = "";
 
-      // dd('техт анализа', $textAnalize);
       return response($textAnalize, $status = 200);
     }
 
     public function subscibeContract($user_id, $smartAddress) {
-
-      // dd(SmartsAnalizerService::getABI($smartAddress));
-      // kd();
-      DB::table('subscribe_contracts')
-        ->where($smartAddress, '=', );
-      
       DB::table('subscribe_contracts')->insert([
         'user_id' => $user_id,
         'address' => $smartAddress,
         'time_checking' => 2, // каждые два часа
         'message_on' => 'email', // default messaging
         'dependencies' => json_encode(Graph::createGraph($smartAddress, 2)),
-        // 'code_hash' => hash('sha256', $code)
       ]);
       
       ProcessSubscribingContracts::dispatch($smartAddress, $user_id)
@@ -90,9 +69,12 @@ class AnalizeContractsController
 
     public function test() {
       $graphOld = DB::table('subscribe_contracts')
-        ->where('address', '=', '0x7a250d5630b4cf539739df2c5dacb4c659f2488d')
-        ->value('dependencies'); // Автоматически возвращает значение поля
-      dd($graphOld);
+        ->where('address', '=', '0x111111125421ca6dc452d289314280a0f8842a65')
+        ->get()
+        ->toArray();
+
+      $deps = $graphOld[0]->user_id;
+      dd($deps);
     }
 
     public function getSubContracts($userId) {
