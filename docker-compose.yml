@@ -1,0 +1,50 @@
+# TODO: добавить nginx и redis в будущем для обработки большего количества соединений
+
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=postgres
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      - db
+
+  db:
+    image: postgres:latest
+    # restart: always
+    shm_size: 128mb
+    ports:
+      - "5432:5432"  # Открываем порт 5432 для доступа к PostgreSQL
+    environment:
+      POSTGRES_DB: postgres       # Имя создаваемой базы данных
+      POSTGRES_USER: postgres         # Имя пользователя для доступа к базе данных
+      POSTGRES_PASSWORD: postgres     # Пароль для пользователя
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data  # Персистентное хранилище для данных
+
+  queue1:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    command: php artisan queue:work --queue=subscribing --timeout=0
+    volumes:
+      - .:/var/www
+    depends_on:
+      - app
+      - db
+
+volumes:
+  postgres_data:
+
