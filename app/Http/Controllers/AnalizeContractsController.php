@@ -32,8 +32,8 @@ class AnalizeContractsController
       $resData = [];
       foreach ($matches as $match) { 
         $mbLength = strlen($match); 
-        if ($mbLength > 7000) {
-          $code = str_split($match, 7000);
+        if ($mbLength > 50000) {
+          $code = str_split($match, 50000);
         } else {
           $code = [$match];
         }

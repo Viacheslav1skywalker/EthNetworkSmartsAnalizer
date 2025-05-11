@@ -72,7 +72,6 @@ class GigaChatAiAnalizerService implements AIAnalizerInterface {
 
     public static function getCicleAnalize(array $code) {
         if (count($code) > 1) {
-            $text = '';
             // prompts
             $length = count($code);
             $firstChunk = $code[0];
