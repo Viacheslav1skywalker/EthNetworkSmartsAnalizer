@@ -19,6 +19,7 @@ class AnalizeContractsController
     public function analizeContractCode($smartAddress) {
       $response = SmartsAnalizerService::getCode($smartAddress);
       if ($response['message'] != 'OK') {
+
         return response('контракт не существует или не верефицирован', 404);
       }
       $contractName = $response['result'][0]['ContractName'];
@@ -29,6 +30,7 @@ class AnalizeContractsController
         return response("$nameInfo Не удалось распознать код смарт контракта", 200);
       }
 
+      // делим код так как в GigaChat стоит лимит на размер данных
       $resData = [];
       foreach ($matches as $match) { 
         $mbLength = strlen($match); 

@@ -10,16 +10,7 @@ class GigaChatAiAnalizerService implements AIAnalizerInterface {
 
     protected array $prompts;
 
-    // public const START_CICLE = `Сейчас я буду в несколько запросов присылать тебе данные кода
-    // смарт контракта, конечный запрос я обозначу как 'end query'`;
-
-    // public const END_CICLE = 'выведи списком все смарт контракты, которые связаны данным';
-
-
     public static function getTextAnalizeCode(string $code) {
-        // делим код на несколько данных
-        // если их несколько то прописываем цикл
-        // 
         $prompt = "проанализируй код данного смарт контракта 
                 по следующим характеристикам: \n 1) Безопасность \n 2) Газовая эффективность
                 \n 3) Совместимость и стандарты \n 4) А также какие функции есть в этом смарте
@@ -104,13 +95,16 @@ class GigaChatAiAnalizerService implements AIAnalizerInterface {
         return self::getTextAnalizeCode($code[0]);
     }
 
+    // @TODO: добавить обработку других сообщений от Api GigaChat
     public static function getResponce($arrayResponce) {
         if ($arrayResponce['message'] == 'Payment Required') {
+            
             return 'требуются токены для GigaChat';
         }
         try {
             return $arrayResponce['choices'][0]['message']['content'];
         } catch(Exception $e) {
+
             return "error";
         }
     }
